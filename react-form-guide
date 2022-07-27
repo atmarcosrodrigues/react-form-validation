@@ -3,6 +3,7 @@
  - Formik
  - React Final Form
  - Unform
+ - React Form
 
  ## Formik 
 A roundup on React form solutions wouldn’t be complete without Formik. With 30k stars on GitHub, it is basically the most popular library for building and managing forms in React. Formik is a scalable, performant, form helper with a minimal API. It handles form state management, validation, and error handling.
@@ -215,3 +216,81 @@ Relies on custom components that act as a wrapper for HTML form elements
 Relies on React Context API for providing form state data to each form field
 React Final Form weighs 3.2kB, meaning it is very lightweight compared to Final Form at 5.1kB
 
+
+__________________________________________________________________________________________
+
+ ## React Final Form
+ React Form
+React Form provides Hooks for managing form state and validating forms in React.
+
+Installation
+
+yarn add react-form
+Basic usage
+The way you use React Form is similar to how you use Unform so you first have to create a custom field component that uses the useField Hook. This provides you with properties that store the field errors. Oftentimes, you’ll only want to display errors once the user has already “touched” the specific field. This is what the isTouched property allows you to check.
+
+To validate the field, you pass an object containing the validation function:
+
+import React from "react";
+import { useField } from "react-form";
+
+function Field({ name }) {
+  const {
+    value = "",
+    meta: { error, isTouched },
+    getInputProps,
+  } = useField(name, {
+    validate: (value) => {
+      if (!value) {
+        return `${name} is required.`;
+      }
+      return false;
+    },
+  });
+
+  return (
+    <>
+      <input type="text" {...getInputProps()} value={value} />
+      {isTouched && error ? <span>{error}</span> : null}
+    </>
+  );
+}
+
+export default Field;
+Once you have a custom field component, you can now use the useForm Hook to validate your form.
+
+Note the Form component is extracted from useForm:
+
+import React from "react";
+import { useForm } from "react-form";
+import Field from "./components/Field";
+
+function ReactFormComponent() {
+  const {
+    Form,
+    meta: { isSubmitting },
+  } = useForm({
+    onSubmit: async (values, instance) => {
+      console.log("submit: ", values);
+    },
+  });
+
+  return (
+    <Form>
+      <label>
+        Favorite Food: <Field name={"favoriteFood"} />
+      </label>
+
+      <div>
+        <button type="submit">Submit</button>
+      </div>
+    </Form>
+  );
+}
+
+export default ReactFormComponent;
+Summary
+
+Supports React Hooks through the use of useForm
+Uses memoization for fast re-renders
+React Form weighs 4.5kB when minified and gzipped
