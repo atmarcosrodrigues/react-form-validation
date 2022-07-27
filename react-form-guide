@@ -1,0 +1,217 @@
+ # React form validation solutions 
+
+ - Formik
+ - React Final Form
+ - Unform
+
+ ## Formik 
+A roundup on React form solutions wouldn’t be complete without Formik. With 30k stars on GitHub, it is basically the most popular library for building and managing forms in React. Formik is a scalable, performant, form helper with a minimal API. It handles form state management, validation, and error handling.
+
+Installation
+
+yarn add formik
+Basic usage
+Here’s how to use Formik in its most basic form. The useFormik Hook is where all the goodness is encapsulated. To use it, it only requires you to pass in the initialValues which is an object containing the default values of each of your form fields. And the onSubmit handler that gets called when the form validation passes.
+
+When useFormik is called, it returns the event handlers and form state which we could use to specify when to trigger form validation. The validation rules are added through the validate property. A callback function is passed as the value for this property. And it’s where you validate the individual form fields. The validation gets triggered on the onChange event of every field. This means that by default when the user updates the value for the first field, all the other fields in the form will have their validation code triggered as well.
+
+We don’t really want that, that’s why we need to extract the handleBlur and touched from the return object of useFormik. The former allows us to listen for blur events from the fields, while the latter allows us to check whether the user has already visited the field. From there, we can just check for the errors through the errors:
+
+import React from "react";
+import { useFormik } from "formik";
+
+function FormikComponent() {
+  function validate(values) {
+    const errors = {};
+    if (!values.favoriteFood) {
+      errors.favoriteFood = "Required";
+    }
+
+    if (!values.favoritePlace) {
+      errors.favoritePlace = "Required";
+    }
+    return errors;
+  }
+
+  const {
+    handleSubmit,
+    handleChange,
+    handleBlur,
+    touched,
+    values, // use this if you want controlled components
+    errors,
+  } = useFormik({
+    initialValues: {
+      favoriteFood: "",
+      favoritePlace: "",
+    },
+    validate,
+    onSubmit: (values) => {
+      console.log(JSON.stringify(values));
+      // values = {"favoriteFood":"ramen","favoritePlace":"mountains"}
+    },
+  });
+
+  return (
+    <form onSubmit={handleSubmit}>
+      <label htmlFor="favoriteFood">Favorite Food:</label>
+      <input
+        type="text"
+        name="favoriteFood"
+        onChange={handleChange}
+        onBlur={handleBlur}
+      />
+      {touched.favoriteFood && errors.favoriteFood
+        ? <div>errors.favoriteFood</div>
+        : null}
+
+      <label htmlFor="favoritePlace">Favorite place:<label>
+      <input
+        type="text"
+        name="favoritePlace"
+        onChange={handleChange}
+        onBlur={handleBlur}
+      />
+
+      {touched.favoritePlace && errors.favoritePlace
+        ? <div>errors.favoritePlace</div>
+        : null}
+
+      <button type="submit">submit</button>
+    </form>    
+  );
+}
+
+export default App;
+The above example is nice, but it can get out of hand quickly on more complex forms. For that, we could use the Yup library. Yup is a schema builder for parsing values and validating them. You can install it with the following command:
+
+yarn add yup
+To use Yup, all you have to do is replace validate with validationSchema. This is specifically created for Yup integration:
+
+import * as Yup from "yup";
+
+function App() {
+  const schema = Yup.object({
+    favoriteFood: Yup.string().required("Required"),
+    favoritePlace: Yup.string().required("Required"),
+  });
+
+  const { ... } = useFormik = ({
+    // ...
+    validationSchema: schema // replace validate with this
+  });
+}
+Summary
+
+Supports schema-based form validation through the Yup library
+Does not use external state management libraries like Redux to manage form state
+Compatible with both React Native and React Native Web
+Weighs 15kB when minified then gzipped
+
+__________________________________________________________________________________________
+
+ ## React Final Form
+ 
+React Final Form is a framework-agnostic form validation library with zero dependencies. Final Form is the name of the actual library, while React Final Form is the React wrapper. It is subscription-based, so only the specific form fields will get updated when the form state is updated.
+
+Installation
+
+yarn add final-form react-final-form
+Basic usage
+There are two ways of validating forms with React Final Form: record-level and field-level. Record level is pretty much the same as how it’s done with Formik. And just like Formik, you can also easily use Yup for implementing validation rules. The way you validate your form depends on how complex your form is. If your form is fairly simple, you can stick with field-level validation. Otherwise, use record-level.
+
+Here’s an example of record-level validation using Yup. This requires us to use the setIn utility function from the Final Form library to transform the default error object into an object which uses dot-and-bracket syntax (e.g. people[0].name.first). In the code below, you can see that the way it works is similar to Formik. Though it relies on the use of custom components (<Form> and <Field> to wrap the primitive HTML elements to provide it with state and input callbacks:
+
+import React from "react";
+import { setIn } from "final-form";
+import { Form, Field } from "react-final-form";
+import * as Yup from "yup";
+
+const schema = Yup.object({
+  favoriteFood: Yup.string().required("Required"),
+});
+
+const validate = async (values) => {
+  try {
+    await schema.validate(values, { abortEarly: false });
+  } catch (err) {
+    const errors = err.inner.reduce((formError, innerError) => {
+      return setIn(formError, innerError.path, innerError.message);
+    }, {});
+
+    return errors;
+  }
+};
+
+const onSubmit = (values) => {
+  console.log("values: ", values);
+};
+
+function FinalFormComponent() {
+  return (
+    <Form
+      onSubmit={onSubmit}
+      validate={validate}
+      render={({ handleSubmit, form, submitting, pristine, values }) => (
+        <form onSubmit={handleSubmit}>
+          <Field name="favoriteFood">
+            {({ input, meta }) => (
+              <div>
+                <label>Favorite Food</label>
+                <input {...input} type="text" placeholder="favoriteFood" />
+                {meta.error && meta.touched && <span>{meta.error}</span>}
+              </div>
+            )}
+          </Field>
+          <button type="submit">submit</button>
+        </form>
+      )}
+    />
+  );
+}
+And here’s how it’s done using field-level validation:
+
+import React from "react";
+import { Form, Field } from "react-final-form";
+
+const onSubmit = (values) => {
+  console.log("values: ", values);
+};
+
+const required = (value) => (value ? undefined : "Required");
+
+function FinalFormComponent() {
+  return (
+    <Form
+      onSubmit={onSubmit}
+      render={({ handleSubmit, form, submitting, pristine, values }) => (
+        <form onSubmit={handleSubmit}>
+          <div>
+            <Field name="favoriteFood" validate={required}>
+              {({ input, meta }) => (
+                <div>
+                  <label>Favorite Food</label>
+                  <input {...input} type="text" placeholder="Favorite food" />
+                  {meta.error && meta.touched && <div>{meta.error}</div>}
+                </div>
+              )}
+            </Field>
+          </div>
+          <button type="submit">submit</button>
+        </form>
+      )}
+    />
+  );
+}
+
+export default FinalFormComponent;
+Summary
+
+React Final Form doesn’t depend on any libraries
+It allows you to manage which form elements get notified of form state changes. This makes it very performant
+Supports React Hooks
+Supports schema-based validation through the Yup library
+Relies on custom components that act as a wrapper for HTML form elements
+Relies on React Context API for providing form state data to each form field
+React Final Form weighs 3.2kB, meaning it is very lightweight compared to Final Form at 5.1kB
+
