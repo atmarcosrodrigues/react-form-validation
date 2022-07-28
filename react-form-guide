@@ -6,6 +6,7 @@
  - React Form
  - react-json-schema-form
  - React Hook Form
+ - Redux Form
 
  ## Formik 
 A roundup on React form solutions wouldn’t be complete without Formik. With 30k stars on GitHub, it is basically the most popular library for building and managing forms in React. Formik is a scalable, performant, form helper with a minimal API. It handles form state management, validation, and error handling.
