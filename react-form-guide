@@ -4,6 +4,8 @@
  - React Final Form
  - Unform
  - React Form
+ - react-json-schema-form
+ - React Hook Form
 
  ## Formik 
 A roundup on React form solutions wouldn’t be complete without Formik. With 30k stars on GitHub, it is basically the most popular library for building and managing forms in React. Formik is a scalable, performant, form helper with a minimal API. It handles form state management, validation, and error handling.
@@ -294,3 +296,128 @@ Summary
 Supports React Hooks through the use of useForm
 Uses memoization for fast re-renders
 React Form weighs 4.5kB when minified and gzipped
+
+
+
+__________________________________________________________________________________________
+
+
+
+## react-json-schema-form
+A simple React component that allows you to build and validate HTML forms using JSON schema. It ships with simple form validation by default. Validation rules such as required and minLength are built into it. If you want to use more advanced validation rules, you’ll have to write them on your own.
+
+It currently supports Bootstrap and Material UI for HTML form semantics. But you can use your own HTML form template as well.
+
+This library is very flexible when it comes to building forms. The only disadvantage is that there’s a bit of a learning curve needed to fully use it because you’re essentially using an API to build forms.
+
+Installation
+There are two built-in themes that you can use with this library. By default, there’s Bootstrap:
+
+yarn add @rjsf/core
+But if you want to use Material UI, install the following instead:
+
+yarn add @rjsf/material-ui
+Basic usage
+Using the library is a three-step process:
+
+Specify your schema
+Add your custom formats and validation rules
+Use the component
+When you specify your schema, you can add the data type, label, and optionally a custom format that the user input needs to follow. If any of your fields have a custom format, you also need to supply the customFormats prop to the Formcomponent. By default, the form will only be validated when the user submits. But you can also set the liveValidate prop to true so that it will validate the fields as the user inputs data. For custom validation, you can supply the validate prop. This is the validation function to be used for validating specific fields in your form. Lastly, the onSubmit function will only get executed once all the fields have passed validation:
+
+import React, { Component } from "react";
+import { render } from "react-dom";
+import Form from "@rjsf/core";
+
+const schema = {
+  type: "object",
+  required: ["email", "age"],
+  properties: {
+    email: { type: "string", email: "Email Address", format: "email_address" },
+    age: { type: "number" },
+    done: { type: "boolean", title: "Done?", default: false },
+  },
+};
+
+const customFormats = {
+  email_address: /\S+@\S+\.\S+/,
+};
+
+function validate(formData, errors) {
+  if (formData.age < 18) {
+    errors.age.addError("You should be 18 years old or older.");
+  }
+  return errors;
+}
+
+const onSubmit = ({ formData }, e) => console.log("submit: ", formData);
+
+function ReactJsonSchemaComponent() {
+  return (
+    <Form
+      schema={schema}
+      onSubmit={onSubmit}
+      liveValidate={true}
+      noHtml5Validate={true}
+      showErrorList={false}
+      customFormats={customFormats}
+      validate={validate}
+    />
+  );
+}
+
+export default ReactJsonSchemaComponent;
+Summary
+
+Automatically generate forms and apply validation rules based on JSON schema
+Supports Bootstrap and Material UI HTML semantics
+Requires a bit of a learning curve due to its extensive API
+React-json-schema-form weighs 1.3kB when minified and gzipped
+
+## React Hook Form
+React Hook Form is a lightweight React form validation library that mainly uses Hooks to add form validation to HTML input elements. Choose this library if you’re looking for a modern form validation library that’s very performant and easy to use.
+
+Out of all the libraries mentioned in this post. React Hook Form requires the least amount of code that must be written in order to use it. It’s only a two-step process: use the Hook then add a ref to your fields.
+
+Another great thing about this library is that it has very good documentation with lots of examples. You can find guides on almost any use case you can think of such as integrating with an existing form, or how to use it with UI libraries like Material UI.
+
+Installation
+
+yarn add react-hook-form
+Basic usage
+The useForm Hook provides all the data and methods required to implement form validation. You need to pass the name of the field as a mandatory argument to the register() method so that the field can be uniquely identified in the form. Next, invoke and destructure the register() method on the input component. This is what registers the uncontrolled component into the Hook. It requires you to pass the validation rules you need. Optionally, you can also pass the error message you want to show via the message property.
+
+In the example below, we used the required and pattern rule to validate an email field:
+
+import React from 'react';
+import { useForm } from "react-hook-form";
+
+function ReactHookFormComponent() {
+  const { register, handleSubmit, formState: {errors} } = useForm();
+  const onSubmit = data => console.log(data);
+  // {"email":"abc@gmail.com"}
+
+  return (
+    <form onSubmit={handleSubmit(onSubmit)}>
+      <input {...register("email", { required: true, pattern: /\S+@\S+\.\S+/ })} />
+      {errors.email?.type === 'required' && <span> This field is required</span>}
+      {errors.email?.type === 'pattern' && <span> Invalid email</span>}
+
+      <button type="submit">submit</button>
+    </form>
+  );
+}
+
+export default ReactHookFormComponent;
+Summary
+
+Uses uncontrolled form validation for optimal performance
+Aligns with the existing HTML standard for form validation through the use of validation rules such as required, min, max, pattern, and others
+Supports React Native. Simply substitute HTML form elements with the React Native equivalent (eg. TextInput)
+React Hook Form doesn’t depend on any libraries
+Provides you with the ability to isolate components re-render for improved performance
+Has a form builder utility if you want to quickly create trivial forms
+Supports schema-based validation through the Yup library
+Has great documentation and example usage
+React Hook Form weighs 9kB when minified and gzipped
+
