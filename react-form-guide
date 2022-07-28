@@ -7,6 +7,7 @@
  - react-json-schema-form
  - React Hook Form
  - Redux Form
+ - Formsy
 
  ## Formik 
 A roundup on React form solutions wouldn’t be complete without Formik. With 30k stars on GitHub, it is basically the most popular library for building and managing forms in React. Formik is a scalable, performant, form helper with a minimal API. It handles form state management, validation, and error handling.
@@ -529,3 +530,75 @@ Redux Form manages the form state through the Redux library
 Heavier than most libraries mentioned here. It weighs 24.4kB (minified + gzipped)
 Redux Form can only be used with React and Redux
 Redux Form is only useful if there’s a need for tight coupling between existing Redux state and form data
+__________________________________________________________________________________________
+
+ ## Formsy
+ 
+ Formsy is a form input builder and validator for React. It uses simple syntax for form validation rules. It also includes handlers for different form states such as onSubmit and isValid. Formsy is a good choice if you’re looking for an all-in-one solution for building and managing forms. The biggest downside of this library is that it doesn’t support React Hooks.
+
+Installation
+
+yarn add formsy-react
+Basic usage
+Formsy is similar to Unform in that it requires you to create your own custom component wrapped with the withFormsy higher-order component. This provides all the properties and methods required to manipulate the input component and conditionally display error messages:
+
+import React, { Component } from 'react';
+import { withFormsy } from 'formsy-react';
+
+class FormsyInput extends Component {
+  constructor(props) {
+    super(props);
+    this.changeValue = this.changeValue.bind(this);
+  }
+
+  changeValue(event) {
+    this.props.setValue(event.currentTarget.value);
+  }
+
+  render() {
+    const errorMessage = this.props.errorMessage;
+
+    return (
+      <div>
+        <input onChange={this.changeValue} type="text" value={this.props.value || ''} />
+        <span>{!this.props.isPristine ? errorMessage : ''}</span>
+      </div>
+    );
+  }
+}
+
+export default withFormsy(FormsyInput);
+Once you’ve created a custom component, you can now use it in your forms. To create a form, you should use the Formsy component. This requires the onValidSubmit prop. This only gets executed if all the form fields have a valid input. In the below example, we used the isEmail validator, but there are many others you can use:
+
+import React, { Component } from 'react';
+import Formsy from 'formsy-react';
+import FormsyInput from './components/FormsyInput';
+
+export default class App extends Component {
+
+  submit(model) {
+    console.log('valid form: ', model);
+    // {email: "abc@gmail.com"}
+  }
+
+  render() {
+    return (
+      <Formsy onValidSubmit={this.submit}>
+        <FormsyInput name="email" validations="isEmail" validationError="This is not a valid email" required />
+        <button type="submit">
+          Submit
+        </button>
+      </Formsy>
+    );
+  }
+}
+Summary
+
+Formsy is one of the older React form validation libraries out there
+Includes its own validation rules like isEmail andisUrl
+Requires creation of custom form input component before it can be used
+Has no official support for React Hooks which makes the code look more complex
+Formsy weighs 9.9kB when minified and gzipped
+
+__________________________________________________________________________________________
+
