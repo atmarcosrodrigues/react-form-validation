@@ -375,6 +375,9 @@ Supports Bootstrap and Material UI HTML semantics
 Requires a bit of a learning curve due to its extensive API
 React-json-schema-form weighs 1.3kB when minified and gzipped
 
+__________________________________________________________________________________________
+
+
 ## React Hook Form
 React Hook Form is a lightweight React form validation library that mainly uses Hooks to add form validation to HTML input elements. Choose this library if you’re looking for a modern form validation library that’s very performant and easy to use.
 
@@ -422,3 +425,107 @@ Supports schema-based validation through the Yup library
 Has great documentation and example usage
 React Hook Form weighs 9kB when minified and gzipped
 
+
+__________________________________________________________________________________________
+
+
+## Redux Form
+Redux Form allows you to manage your form state (form input values, form errors, etc.) by means of Redux. Redux Form uses the store for keeping track of form state, thus the main disadvantage of this library is its performance. Even if you’re already using Redux in your application, only use it if you need tight coupling between your existing Redux state and your form data.
+
+Installation
+
+yarn add redux-form redux react-redux
+Basic usage
+To use Redux Form, you need to extract the Field component and the reduxFormhigher-order component from redux-form. At a minimum configuration, all you need is to pass a unique name for the form (in this case it’s bio). But here, we’re also passing in a validation function. This gets executed when the user submits the form.
+
+To create an input field, you use the Field component. Here, we pass in the type, name, component to be used for rendering, and the label. The renderField() function is responsible for returning the input component. Aside from rendering the label and input, it also renders the error messages. This is made possible by Redux Form’s Field component:
+
+import React from 'react';
+import { Field, reduxForm } from 'redux-form';
+
+const validate = values => {
+  const errors = {}
+  if (!values.name) {
+    errors.name = 'Required';
+  }
+
+  if (!values.email) {
+    errors.email = 'Required';
+  } else if (!/\S+@\S+\.\S+/i.test(values.email)) {
+    errors.email = 'Invalid email address'
+  }
+  return errors;
+}
+
+const renderField = ({
+  input,
+  label,
+  type,
+  meta: { touched, error }
+}) => (
+  <div>
+    <label>{label}</label>
+    <div>
+      <input {...input} placeholder={label} type={type} />
+      {touched && (error && <span>{error}</span>)}
+    </div>
+  </div>
+);
+
+let BioForm = props => {
+  const { handleSubmit } = props;
+  return (
+    <form onSubmit={handleSubmit}>
+      <div>
+        <Field type="text" name="name" component={renderField} label="Name" />
+      </div>
+      <div>
+        <Field type="email" name="email" component={renderField} label="Email" />
+      </div>
+      <button type="submit">Submit</button>
+    </form>
+  );
+}
+
+BioForm = reduxForm({
+  form: 'bio',
+  validate
+})(BioForm);
+
+export default BioForm;
+To bring it all together, include the formReducer to your existing reducers then pass an onSubmit handler to your form component:
+
+import React, { Component } from 'react';
+import { createStore, combineReducers } from 'redux';
+import { reducer as formReducer } from 'redux-form';
+import { Provider } from 'react-redux';
+import BioForm from './components/BioForm';
+
+const rootReducer = combineReducers({
+  // your existing reducers..
+  form: formReducer
+});
+
+const store = createStore(rootReducer);
+
+class ReduxFormComponent extends Component {
+  submit = values => {
+    console.log('submit: ', values);
+  }
+
+  render() {
+    return (
+      <Provider store={store}>
+        <BioForm onSubmit={this.submit} />
+      </Provider>
+    );
+  }
+}
+
+export default ReduxFormComponent;
+Summary
+
+Redux Form manages the form state through the Redux library
+Heavier than most libraries mentioned here. It weighs 24.4kB (minified + gzipped)
+Redux Form can only be used with React and Redux
+Redux Form is only useful if there’s a need for tight coupling between existing Redux state and form data
