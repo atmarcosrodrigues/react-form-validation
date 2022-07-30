@@ -9,6 +9,8 @@
  - Redux Form
  - Formsy
  - Simple React Validator
+ 
+ 
  ## Formik 
 A roundup on React form solutions wouldn’t be complete without Formik. With 30k stars on GitHub, it is basically the most popular library for building and managing forms in React. Formik is a scalable, performant, form helper with a minimal API. It handles form state management, validation, and error handling.
 
@@ -604,6 +606,62 @@ ________________________________________________________________________________
 
 ## Simple React Validator
 
+Simple React Validator is a Laravel-inspired React form validation library. Out of all the libraries reviewed in this article, this one has the biggest collection of built-in validation rules.
+
+Installation
+
+yarn add simple-react-validator
+Basic usage
+The example in the GitHub repo doesn’t really use Hooks, so you have to dig a bit deeper to find out how to use it with Hooks. In the code below, you can see that it mainly uses controlled components so you have to manage the form state independently. Another downside of this library is that you have to use forceUpdate every time you need to show the error messages:
+
+import React, { useState, useRef } from "react";
+import SimpleReactValidator from "simple-react-validator";
+
+function SimpleReactValidatorComponent() {
+  const [email, setEmail] = useState("");
+  const simpleValidator = useRef(new SimpleReactValidator());
+  const [, forceUpdate] = useState();
+
+  const form = React.createRef();
+
+  const submitForm = () => {
+    const formValid = simpleValidator.current.allValid();
+    if (!formValid) {
+      simpleValidator.current.showMessages(true);
+      forceUpdate(1)
+    } else {
+      console.log('submit form.');
+    }
+  };
+
+  return (
+    <form ref={form}>
+      <label>Email</label>
+      <input
+        name="email"
+        type="text"
+        value={email}
+        onChange={(e) => setEmail(e.target.value)}
+        onBlur={() => {
+          simpleValidator.current.showMessageFor("email")
+          forceUpdate(1);
+        }}
+      />
+
+      {simpleValidator.current.message("email", email, "required|email")}
+      <button type="button" onClick={submitForm}>submit</button>
+    </form>
+  );
+}
+
+export default SimpleReactValidatorComponent;
+Summary
+
+Lots of built-in validation rules that are based from Laravel
+Uses the state for form state management
+Has localization support for error messages
+Has no official React Hooks support
+Simple React Validator weighs 4kB when minified and gzipped
 
 
 __________________________________________________________________________________________
