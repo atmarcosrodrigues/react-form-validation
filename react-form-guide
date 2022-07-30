@@ -8,7 +8,7 @@
  - React Hook Form
  - Redux Form
  - Formsy
-
+ - Simple React Validator
  ## Formik 
 A roundup on React form solutions wouldn’t be complete without Formik. With 30k stars on GitHub, it is basically the most popular library for building and managing forms in React. Formik is a scalable, performant, form helper with a minimal API. It handles form state management, validation, and error handling.
 
@@ -599,6 +599,12 @@ Includes its own validation rules like isEmail andisUrl
 Requires creation of custom form input component before it can be used
 Has no official support for React Hooks which makes the code look more complex
 Formsy weighs 9.9kB when minified and gzipped
+
+__________________________________________________________________________________________
+
+## Simple React Validator
+
+
 
 __________________________________________________________________________________________
 
